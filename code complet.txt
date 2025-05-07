@@ -1,0 +1,1553 @@
+classdef traitement_image < matlab.apps.AppBase
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                        matlab.ui.Figure
+        TabGroup                        matlab.ui.container.TabGroup
+        AccueilTab                      matlab.ui.container.Tab
+        UIAxes7                         matlab.ui.control.UIAxes
+        InterfacetraitementdimageLabel  matlab.ui.control.Label
+        RaliseparAfrahsalemWafaguizaniLabel  matlab.ui.control.Label
+        EncadresparMMohamedKallelLabel  matlab.ui.control.Label
+        GEC3Label                       matlab.ui.control.Label
+        Page1Tab                        matlab.ui.container.Tab
+        selectionneruneImageButton      matlab.ui.control.Button
+        UIAxes                          matlab.ui.control.UIAxes
+        hauteurdelimageEditFieldLabel   matlab.ui.control.Label
+        hauteurdelimageEditField        matlab.ui.control.NumericEditField
+        largeurdelimageEditFieldLabel   matlab.ui.control.Label
+        largeurdelimageEditField        matlab.ui.control.NumericEditField
+        TailledelimageLabel             matlab.ui.control.Label
+        Page2Tab                        matlab.ui.container.Tab
+        AfficheruneportiondelimageLabel  matlab.ui.control.Label
+        debutdeLigneEditFieldLabel      matlab.ui.control.Label
+        debutdeLigneEditField           matlab.ui.control.NumericEditField
+        findeLigneLabel                 matlab.ui.control.Label
+        findeLigneEditField             matlab.ui.control.NumericEditField
+        UIAxes2                         matlab.ui.control.UIAxes
+        runButton                       matlab.ui.control.Button
+        debutdeColonneEditFieldLabel    matlab.ui.control.Label
+        debutdeColonneEditField         matlab.ui.control.NumericEditField
+        findeColonneEditFieldLabel      matlab.ui.control.Label
+        findeColonneEditField           matlab.ui.control.NumericEditField
+        parametresLabel                 matlab.ui.control.Label
+        Page3Tab                        matlab.ui.container.Tab
+        niveaudegrisEditFieldLabel      matlab.ui.control.Label
+        niveaudegrisEditField           matlab.ui.control.NumericEditField
+        UIAxes3                         matlab.ui.control.UIAxes
+        nombredapparitionEditFieldLabel  matlab.ui.control.Label
+        nombredapparitionEditField      matlab.ui.control.NumericEditField
+        runButton_2                     matlab.ui.control.Button
+        ScanningdelimageLabel           matlab.ui.control.Label
+        Page4Tab                        matlab.ui.container.Tab
+        choisirlanglederotationEditFieldLabel  matlab.ui.control.Label
+        choisirlanglederotationEditField  matlab.ui.control.NumericEditField
+        UIAxes4                         matlab.ui.control.UIAxes
+        runButton_3                     matlab.ui.control.Button
+        AppliquerunerotationsurlimagechoisieLabel  matlab.ui.control.Label
+        Page5Tab                        matlab.ui.container.Tab
+        UIAxes5                         matlab.ui.control.UIAxes
+        frequencedesniveauxdegrisdelimageButton  matlab.ui.control.Button
+        runButton_5                     matlab.ui.control.Button
+        runButton_4                     matlab.ui.control.Button
+        numerodeligneLabel              matlab.ui.control.Label
+        numerodeligneEditField          matlab.ui.control.NumericEditField
+        numerodecolonneEditFieldLabel   matlab.ui.control.Label
+        numerodecolonneEditField        matlab.ui.control.NumericEditField
+        profiledecolonneLabel           matlab.ui.control.Label
+        profiledeligneLabel             matlab.ui.control.Label
+        HistogrammesetprofilesLabel     matlab.ui.control.Label
+        Page6Tab                        matlab.ui.container.Tab
+        typedebruitDropDownLabel        matlab.ui.control.Label
+        typedebruitDropDown             matlab.ui.control.DropDown
+        coefficientdebruitageEditFieldLabel  matlab.ui.control.Label
+        coefficientdebruitageEditField  matlab.ui.control.NumericEditField
+        typedefiltreDropDownLabel       matlab.ui.control.Label
+        typedefiltreDropDown            matlab.ui.control.DropDown
+        ajouterBruitButton              matlab.ui.control.Button
+        UIAxes6                         matlab.ui.control.UIAxes
+        saisirlatailledufiltreEditFieldLabel  matlab.ui.control.Label
+        saisirlatailledufiltreEditField  matlab.ui.control.NumericEditField
+        ajouterfiltreButton             matlab.ui.control.Button
+        BruitLabel                      matlab.ui.control.Label
+        FiltreLabel                     matlab.ui.control.Label
+        UIAxes8                         matlab.ui.control.UIAxes
+        calculerPSNRButton              matlab.ui.control.Button
+        PSNREditFieldLabel              matlab.ui.control.Label
+        PSNREditField                   matlab.ui.control.NumericEditField
+    end
+    methods (Access = private)
+    
+        
+    end
+   
+    methods (Access = private)
+        % Code that executes after component creation
+        function StartupFcn(app)
+         
+        log = imread('C:\Users\Dell\Desktop\image.jfif');
+        imshow(log, 'Parent', app.UIAxes7, 'InitialMagnification', 'fit');
+        axis(app.UIAxes7, 'image');  
+        axis(app.UIAxes7, 'off');    
+        end
+        % Button pushed function: selectionneruneImageButton
+        function selectionneruneImageButtonPushed(app, event)
+            
+            [file, path] = uigetfile({'*.jpg;*.png;*.bmp;*.tif', 'Image Files (*.jpg, *.png, *.bmp, *.tif)'});
+    if isequal(file, 0)
+        disp('Aucune image sélectionnée.');
+    else
+        pathedelimage = fullfile(path, file);
+        image = imread(pathedelimage); 
+        imshow(image, 'Parent', app.UIAxes); 
+        app.hauteurdelimageEditField.Value = size(image, 1); 
+        app.largeurdelimageEditField.Value = size(image, 2); 
+    end
+    
+        end
+        % Button pushed function: runButton
+        function runButtonPushed(app, event)
+     
+    if isempty(app.UIAxes.Children)
+        uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image.', 'Aucune image chargée');
+        return;
+    end 
+    image = app.UIAxes.Children.CData; 
+    [h, l, ~] = size(image);
+    debutLigne = app.debutdeLigneEditField.Value;  
+    finLigne = app.findeLigneEditField.Value;      
+    debutColonne = app.debutdeColonneEditField.Value;  
+    finColonne = app.findeColonneEditField.Value;      
+    if debutLigne < 1 || finLigne > h || debutLigne >= finLigne
+    uialert(app.UIFigure, 'La valeur de ligne est invalide, entrez une autre .', 'Erreur de sélection des lignes');
+    return;
+    end          
+    if debutColonne < 1 || finColonne > l || debutColonne >= finColonne
+    uialert(app.UIFigure, 'La valeur de colonne est invalide, entrez une autre.', 'Erreur de sélection des colonnes');
+    return;
+    end
+    bloc = image(debutLigne:finLigne, debutColonne:finColonne, :);
+    imshow(bloc, 'Parent', app.UIAxes2);
+            
+        end
+        % Button pushed function: runButton_2
+        function chercherniveaudegrisButtonPushed(app, event)
+        
+    if isempty(app.UIAxes.Children)
+        uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+        return;
+    end
+     image = app.UIAxes.Children.CData;
+    if size(image, 3) == 3
+        g = rgb2gray(image);  
+    else
+        g = image;  
+    end
+     ng = app.niveaudegrisEditField.Value;  
+         if ng < 0 || ng > 255
+             uialert(app.UIFigure, 'Le niveau de gris doit être entre 0 et 255.', 'Niveau de gris invalide');
+             return;
+         end
+        m = sum(g(:) == ng);%m freqence de nv de gris dans imgg
+        app.nombredapparitionEditField.Value = m;
+        imgscannee = 255 * ones(size(g), 'uint8');
+        imgscannee(g == ng) = ng;
+        imshow(imgscannee, 'Parent', app.UIAxes3);  
+        end
+        % Button pushed function: runButton_3
+        function rotationPushed(app, event)
+             if isempty(app.UIAxes.Children)
+      uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+      return;
+             end
+            image = app.UIAxes.Children.CData;
+            angle = app.choisirlanglederotationEditField.Value;  
+             if isempty(angle) || ~isnumeric(angle)
+               uialert(app.UIFigure, 'Veuillez entrer un angle de rotation valide.', 'Angle invalide');
+               return;
+             end
+             imgrota = imrotate(image, angle);
+             imshow(imgrota, 'Parent', app.UIAxes4);  
+        end
+        % Button pushed function: 
+        % frequencedesniveauxdegrisdelimageButton
+        function frequencedesniveauxdegrisdelimageButtonPushed(app, event)
+             if isempty(app.UIAxes.Children)
+      uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+      return;
+             end
+            image = app.UIAxes.Children.CData;
+            if size(image, 3) == 3
+        g = rgb2gray(image);
+            end
+            h = imhist(g);
+            bar(app.UIAxes5, h);
+            title(app.UIAxes5, 'Histogramme des niveaux de gris');
+            xlabel(app.UIAxes5, 'Niveau de gris');
+            ylabel(app.UIAxes5, 'Nombre de pixels');
+        end
+        % Button pushed function: runButton_5
+        function runButton_5Pushed(app, event)
+            if isempty(app.UIAxes.Children)
+    uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+    return;
+            end
+            image = app.UIAxes.Children.CData;
+            if size(image, 3) == 3
+              image = rgb2gray(image);
+            end
+            ligne = app.numerodeligneEditField.Value;
+             if ligne < 1 || ligne > size(image, 1)
+        uialert(app.UIFigure, 'Le numéro de ligne est invalide,choisissez autre', 'Erreur');
+        return;
+             end
+              profile = image(ligne, :);
+             plot(app.UIAxes5,profile);
+             title(app.UIAxes5, ['Profil de la ligne ', num2str(ligne)]);
+             xlabel(app.UIAxes5, 'Colonne');
+             ylabel(app.UIAxes5, 'Valeur de pixel');
+        end
+        % Button pushed function: runButton_4
+        function runButton_4Pushed(app, event)
+             if isempty(app.UIAxes.Children)
+    uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+    return;
+             end
+             image = app.UIAxes.Children.CData;
+             if size(image, 3) == 3
+        image = rgb2gray(image);
+             end
+              colonne = app.numerodecolonneEditField.Value;
+    if colonne < 1 || colonne > size(image, 2)
+        uialert(app.UIFigure, 'Le numéro de colonne est invalide,choisissez autre', 'Erreur');
+        return;
+    end
+             profile = image(:, colonne);
+    plot(app.UIAxes5, profile);
+    title(app.UIAxes5, ['Profil de la colonne ', num2str(colonne)]);
+    xlabel(app.UIAxes5, 'Ligne');
+    ylabel(app.UIAxes5, 'Valeur de pixel');
+        end
+        % Button pushed function: ajouterBruitButton
+        function ajouterBruitButtonPushed(app, event)
+             if isempty(app.UIAxes.Children)
+      uialert(app.UIFigure, 'Veuillez charger une image dans page 1 avant d''ajouter du bruit.', 'Aucune image chargée');
+      return;
+             end
+             image = app.UIAxes.Children.CData;
+              bruit = app.typedebruitDropDown.Value; 
+              co = app.coefficientdebruitageEditField.Value; 
+             if co < 0 || co > 1
+     uialert(app.UIFigure, 'Le coefficient de bruitage doit être entre 0 et 1.', 'Valeur de bruit invalide');
+     return;
+             end
+              switch bruit
+        case 'Salt&pepper'
+            i = imnoise(image, 'salt & pepper', co);
+        case 'Gaussian'
+            i = imnoise(image, 'gaussian', 0, co);
+        case 'Speckle'
+           i = imnoise(image, 'speckle', co);
+        otherwise
+            uialert(app.UIFigure, 'Type de bruit non reconnu.', 'Erreur');
+            return;
+              end
+    imshow(i, 'Parent', app.UIAxes6);
+        end
+        % Button pushed function: ajouterfiltreButton
+        function ajouterfiltreButtonPushed(app, event)
+            
+             tailleFiltre = app.saisirlatailledufiltreEditField.Value;
+              hauteurImage = app.hauteurdelimageEditField.Value;
+              largeurImage = app.largeurdelimageEditField.Value;
+               if isempty(app.UIAxes6.Children)
+       uialert(app.UIFigure, 'Aucune image n''a été trouvée.', 'Erreur');
+       return;
+               end
+              ImageSelectionnee = app.UIAxes6.Children.CData;
+             if isempty(ImageSelectionnee)
+    uialert(app.UIFigure, 'Veuillez sélectionner une image dans axe 6.', 'Erreur');
+    return;
+             end
+            if tailleFiltre > min(hauteurImage, largeurImage)
+    uialert(app.UIFigure, 'La taille du filtre est trop grande pour l''image.', 'Erreur');
+    return;
+            elseif mod(tailleFiltre, 2) == 0
+    uialert(app.UIFigure, 'La taille du filtre doit être impaire (ex : 3, 5, 7, etc.)', 'Erreur');
+    return;
+            end
+               switch app.typedefiltreDropDown.Value
+     case 'Medium'
+         if ndims(ImageSelectionnee) == 3
+             imageFiltree(:,:,1) = medfilt2(ImageSelectionnee(:,:,1), [tailleFiltre tailleFiltre]);
+             imageFiltree(:,:,2) = medfilt2(ImageSelectionnee(:,:,2), [tailleFiltre tailleFiltre]);
+             imageFiltree(:,:,3) = medfilt2(ImageSelectionnee(:,:,3), [tailleFiltre tailleFiltre]);
+         else
+            imageFiltree = medfilt2(ImageSelectionnee, [tailleFiltre tailleFiltre]);
+        end
+    case 'Moyen'
+        h = fspecial('average', [tailleFiltre tailleFiltre]);
+        imageFiltree = imfilter(ImageSelectionnee, h);
+    case 'Laplacien'
+        h = fspecial('laplacian');
+        imageFiltree = imfilter(ImageSelectionnee, h);
+    otherwise
+        uialert(app.UIFigure, 'Type de filtre inconnu.', 'Erreur');
+        return;
+               end
+           
+            imshow(imageFiltree, 'Parent', app.UIAxes8);
+            
+        end
+        % Button pushed function: calculerPSNRButton
+        function calculerPSNRButtonPushed(app, event)
+            
+    imgOriginale = getimage(app.UIAxes);  
+       
+    imgFiltree = getimage(app.UIAxes8);  
+    
+    
+    mse = immse(imgFiltree, imgOriginale);
+    
+    psnrValue = 10 * log10(255^2 / mse);
+    
+    app.PSNREditField.Value = psnrValue;
+        end
+        % Callback function
+        function calculerPSNRButton_2Pushed(app, event)
+             
+            imgOriginale = getimage(app.UIAxes);  
+            
+            imgBruitee = getimage(app.UIAxes6);  
+            
+            mseValue = immse(imgBruitee, imgOriginale);
+            
+            psnrValue = 10 * log10(255^2 / mseValue);
+            
+           
+            app.PSNREditField_2.Value = num2str(psnrValue);  
+            
+        end
+    end
+    % App initialization and construction
+    methods (Access = private)
+        % Create UIFigure and components
+        function createComponents(app)
+            % Create UIFigure
+            app.UIFigure = uifigure;
+            app.UIFigure.Position = [100 100 1127 789];
+            app.UIFigure.Name = 'UI Figure';
+            setAutoResize(app, app.UIFigure, true)
+            % Create TabGroup
+            app.TabGroup = uitabgroup(app.UIFigure);
+            app.TabGroup.Position = [131 106 852 574];
+            % Create AccueilTab
+            app.AccueilTab = uitab(app.TabGroup);
+            app.AccueilTab.Title = 'Accueil';
+            app.AccueilTab.BackgroundColor = [0.9373 0.9373 0.9373];
+            app.AccueilTab.ForegroundColor = [1 0 0];
+            app.AccueilTab.Units = 'pixels';
+            % Create UIAxes7
+            app.UIAxes7 = uiaxes(app.AccueilTab);
+            app.UIAxes7.Position = [55 321 394 197];
+            % Create InterfacetraitementdimageLabel
+            app.InterfacetraitementdimageLabel = uilabel(app.AccueilTab);
+            app.InterfacetraitementdimageLabel.HorizontalAlignment = 'center';
+            app.InterfacetraitementdimageLabel.FontSize = 48;
+            app.InterfacetraitementdimageLabel.FontWeight = 'bold';
+            app.InterfacetraitementdimageLabel.FontColor = [1 0 0];
+            app.InterfacetraitementdimageLabel.Position = [101.5 234 672 63];
+            app.InterfacetraitementdimageLabel.Text = 'Interface traitement d''image ';
+            % Create RaliseparAfrahsalemWafaguizaniLabel
+            app.RaliseparAfrahsalemWafaguizaniLabel = uilabel(app.AccueilTab);
+            app.RaliseparAfrahsalemWafaguizaniLabel.FontSize = 24;
+            app.RaliseparAfrahsalemWafaguizaniLabel.FontWeight = 'bold';
+            app.RaliseparAfrahsalemWafaguizaniLabel.FontAngle = 'italic';
+            app.RaliseparAfrahsalemWafaguizaniLabel.Position = [178 128 492 31];
+            app.RaliseparAfrahsalemWafaguizaniLabel.Text = 'Réalisée par : Afrah salem & Wafa guizani';
+            % Create EncadresparMMohamedKallelLabel
+            app.EncadresparMMohamedKallelLabel = uilabel(app.AccueilTab);
+            app.EncadresparMMohamedKallelLabel.FontSize = 24;
+            app.EncadresparMMohamedKallelLabel.FontWeight = 'bold';
+            app.EncadresparMMohamedKallelLabel.FontAngle = 'italic';
+            app.EncadresparMMohamedKallelLabel.Position = [208 98 415 31];
+            app.EncadresparMMohamedKallelLabel.Text = 'Encadrées par : M.Mohamed Kallel ';
+            % Create GEC3Label
+            app.GEC3Label = uilabel(app.AccueilTab);
+            app.GEC3Label.FontSize = 18;
+            app.GEC3Label.FontWeight = 'bold';
+            app.GEC3Label.FontAngle = 'italic';
+            app.GEC3Label.Position = [384 63 65 23];
+            app.GEC3Label.Text = '2GEC3';
+            % Create Page1Tab
+            app.Page1Tab = uitab(app.TabGroup);
+            app.Page1Tab.Title = 'Page1';
+            app.Page1Tab.ForegroundColor = [1 0 0];
+            app.Page1Tab.Units = 'pixels';
+            % Create selectionneruneImageButton
+            app.selectionneruneImageButton = uibutton(app.Page1Tab, 'push');
+            app.selectionneruneImageButton.ButtonPushedFcn = createCallbackFcn(app, @selectionneruneImageButtonPushed, true);
+            app.selectionneruneImageButton.FontSize = 20;
+            app.selectionneruneImageButton.FontWeight = 'bold';
+            app.selectionneruneImageButton.Position = [62 471 762 40];
+            app.selectionneruneImageButton.Text = 'selectionner une Image';
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.Page1Tab);
+            title(app.UIAxes, 'image selectionnee');
+            app.UIAxes.Position = [25 27 582 425];
+            % Create hauteurdelimageEditFieldLabel
+            app.hauteurdelimageEditFieldLabel = uilabel(app.Page1Tab);
+            app.hauteurdelimageEditFieldLabel.HorizontalAlignment = 'right';
+            app.hauteurdelimageEditFieldLabel.FontSize = 16;
+            app.hauteurdelimageEditFieldLabel.FontWeight = 'bold';
+            app.hauteurdelimageEditFieldLabel.Position = [613 253 146 20];
+            app.hauteurdelimageEditFieldLabel.Text = 'hauteur de l''image';
+            % Create hauteurdelimageEditField
+            app.hauteurdelimageEditField = uieditfield(app.Page1Tab, 'numeric');
+            app.hauteurdelimageEditField.Position = [774 254 70 22];
+            % Create largeurdelimageEditFieldLabel
+            app.largeurdelimageEditFieldLabel = uilabel(app.Page1Tab);
+            app.largeurdelimageEditFieldLabel.HorizontalAlignment = 'right';
+            app.largeurdelimageEditFieldLabel.FontSize = 16;
+            app.largeurdelimageEditFieldLabel.FontWeight = 'bold';
+            app.largeurdelimageEditFieldLabel.Position = [617 207 142 20];
+            app.largeurdelimageEditFieldLabel.Text = 'largeur de l''image';
+            % Create largeurdelimageEditField
+            app.largeurdelimageEditField = uieditfield(app.Page1Tab, 'numeric');
+            app.largeurdelimageEditField.Position = [774 208 70 22];
+            % Create TailledelimageLabel
+            app.TailledelimageLabel = uilabel(app.Page1Tab);
+            app.TailledelimageLabel.FontSize = 18;
+            app.TailledelimageLabel.FontWeight = 'bold';
+            app.TailledelimageLabel.FontColor = [1 0 0];
+            app.TailledelimageLabel.Position = [695 304 149 23];
+            app.TailledelimageLabel.Text = 'Taille de l''image ';
+            % Create Page2Tab
+            app.Page2Tab = uitab(app.TabGroup);
+            app.Page2Tab.Title = 'Page2';
+            app.Page2Tab.ForegroundColor = [1 0 0];
+            app.Page2Tab.Units = 'pixels';
+            % Create AfficheruneportiondelimageLabel
+            app.AfficheruneportiondelimageLabel = uilabel(app.Page2Tab);
+            app.AfficheruneportiondelimageLabel.FontSize = 18;
+            app.AfficheruneportiondelimageLabel.FontWeight = 'bold';
+            app.AfficheruneportiondelimageLabel.FontColor = [0 0.0314 1];
+            app.AfficheruneportiondelimageLabel.Position = [291 481 278 23];
+            app.AfficheruneportiondelimageLabel.Text = 'Afficher une portion de l''image ';
+            % Create debutdeLigneEditFieldLabel
+            app.debutdeLigneEditFieldLabel = uilabel(app.Page2Tab);
+            app.debutdeLigneEditFieldLabel.HorizontalAlignment = 'center';
+            app.debutdeLigneEditFieldLabel.FontSize = 16;
+            app.debutdeLigneEditFieldLabel.FontWeight = 'bold';
+            app.debutdeLigneEditFieldLabel.Position = [97 373 119 20];
+            app.debutdeLigneEditFieldLabel.Text = 'debut de Ligne';
+            % Create debutdeLigneEditField
+            app.debutdeLigneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.debutdeLigneEditField.HorizontalAlignment = 'center';
+            app.debutdeLigneEditField.Position = [217 372 66 22];
+            % Create findeLigneLabel
+            app.findeLigneLabel = uilabel(app.Page2Tab);
+            app.findeLigneLabel.HorizontalAlignment = 'center';
+            app.findeLigneLabel.FontSize = 16;
+            app.findeLigneLabel.FontWeight = 'bold';
+            app.findeLigneLabel.Position = [119 328 95 20];
+            app.findeLigneLabel.Text = 'fin de Ligne';
+            % Create findeLigneEditField
+            app.findeLigneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.findeLigneEditField.HorizontalAlignment = 'center';
+            app.findeLigneEditField.Position = [218 329 65 22];
+            % Create UIAxes2
+            app.UIAxes2 = uiaxes(app.Page2Tab);
+            title(app.UIAxes2, 'portion de l''image');
+            app.UIAxes2.Position = [416 87 446 370];
+            % Create runButton
+            app.runButton = uibutton(app.Page2Tab, 'push');
+            app.runButton.ButtonPushedFcn = createCallbackFcn(app, @runButtonPushed, true);
+            app.runButton.FontSize = 16;
+            app.runButton.FontWeight = 'bold';
+            app.runButton.FontColor = [1 0 0];
+            app.runButton.Position = [157 166 100 27];
+            app.runButton.Text = 'run';
+            % Create debutdeColonneEditFieldLabel
+            app.debutdeColonneEditFieldLabel = uilabel(app.Page2Tab);
+            app.debutdeColonneEditFieldLabel.HorizontalAlignment = 'center';
+            app.debutdeColonneEditFieldLabel.FontSize = 16;
+            app.debutdeColonneEditFieldLabel.FontWeight = 'bold';
+            app.debutdeColonneEditFieldLabel.Position = [81 282 141 20];
+            app.debutdeColonneEditFieldLabel.Text = 'debut de Colonne';
+            % Create debutdeColonneEditField
+            app.debutdeColonneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.debutdeColonneEditField.HorizontalAlignment = 'center';
+            app.debutdeColonneEditField.Position = [219 283 64 22];
+            % Create findeColonneEditFieldLabel
+            app.findeColonneEditFieldLabel = uilabel(app.Page2Tab);
+            app.findeColonneEditFieldLabel.HorizontalAlignment = 'center';
+            app.findeColonneEditFieldLabel.FontSize = 16;
+            app.findeColonneEditFieldLabel.FontWeight = 'bold';
+            app.findeColonneEditFieldLabel.Position = [100 241 117 20];
+            app.findeColonneEditFieldLabel.Text = 'fin de Colonne';
+            % Create findeColonneEditField
+            app.findeColonneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.findeColonneEditField.HorizontalAlignment = 'center';
+            app.findeColonneEditField.Position = [219 242 64 22];
+            % Create parametresLabel
+            app.parametresLabel = uilabel(app.Page2Tab);
+            app.parametresLabel.FontSize = 16;
+            app.parametresLabel.FontWeight = 'bold';
+            app.parametresLabel.Position = [100 415 102 20];
+            app.parametresLabel.Text = 'parametres :';
+            % Create Page3Tab
+            app.Page3Tab = uitab(app.TabGroup);
+            app.Page3Tab.Title = 'Page3';
+            app.Page3Tab.ForegroundColor = [1 0 0];
+            app.Page3Tab.Units = 'pixels';
+            % Create niveaudegrisEditFieldLabel
+            app.niveaudegrisEditFieldLabel = uilabel(app.Page3Tab);
+            app.niveaudegrisEditFieldLabel.HorizontalAlignment = 'center';
+            app.niveaudegrisEditFieldLabel.FontSize = 16;
+            app.niveaudegrisEditFieldLabel.FontWeight = 'bold';
+            app.niveaudegrisEditFieldLabel.Position = [54.53125 360 178 20];
+            app.niveaudegrisEditFieldLabel.Text = 'niveau de gris';
+            % Create niveaudegrisEditField
+            app.niveaudegrisEditField = uieditfield(app.Page3Tab, 'numeric');
+            app.niveaudegrisEditField.Position = [229.015625 361 105.015625 22];
+            % Create UIAxes3
+            app.UIAxes3 = uiaxes(app.Page3Tab);
+            title(app.UIAxes3, 'image scanne');
+            app.UIAxes3.Position = [362 50 522 380];
+            % Create nombredapparitionEditFieldLabel
+            app.nombredapparitionEditFieldLabel = uilabel(app.Page3Tab);
+            app.nombredapparitionEditFieldLabel.HorizontalAlignment = 'center';
+            app.nombredapparitionEditFieldLabel.FontSize = 16;
+            app.nombredapparitionEditFieldLabel.FontWeight = 'bold';
+            app.nombredapparitionEditFieldLabel.Position = [54 315 160 20];
+            app.nombredapparitionEditFieldLabel.Text = 'nombre d''apparition';
+            % Create nombredapparitionEditField
+            app.nombredapparitionEditField = uieditfield(app.Page3Tab, 'numeric');
+            app.nombredapparitionEditField.Position = [229 316 105 22];
+            % Create runButton_2
+            app.runButton_2 = uibutton(app.Page3Tab, 'push');
+            app.runButton_2.ButtonPushedFcn = createCallbackFcn(app, @chercherniveaudegrisButtonPushed, true);
+            app.runButton_2.FontSize = 16;
+            app.runButton_2.FontWeight = 'bold';
+            app.runButton_2.FontColor = [1 0 0];
+            app.runButton_2.Position = [122 222 100 27];
+            app.runButton_2.Text = 'run';
+            % Create ScanningdelimageLabel
+            app.ScanningdelimageLabel = uilabel(app.Page3Tab);
+            app.ScanningdelimageLabel.FontSize = 22;
+            app.ScanningdelimageLabel.FontWeight = 'bold';
+            app.ScanningdelimageLabel.FontColor = [0.0745 0.0745 0.9255];
+            app.ScanningdelimageLabel.Position = [333 481 225 29];
+            app.ScanningdelimageLabel.Text = 'Scanning de l''image ';
+            % Create Page4Tab
+            app.Page4Tab = uitab(app.TabGroup);
+            app.Page4Tab.Title = 'Page4';
+            app.Page4Tab.ForegroundColor = [1 0 0];
+            app.Page4Tab.Units = 'pixels';
+            % Create choisirlanglederotationEditFieldLabel
+            app.choisirlanglederotationEditFieldLabel = uilabel(app.Page4Tab);
+            app.choisirlanglederotationEditFieldLabel.HorizontalAlignment = 'right';
+            app.choisirlanglederotationEditFieldLabel.FontSize = 16;
+            app.choisirlanglederotationEditFieldLabel.FontWeight = 'bold';
+            app.choisirlanglederotationEditFieldLabel.Position = [23.03125 303 201 20];
+            app.choisirlanglederotationEditFieldLabel.Text = 'choisir l''angle de rotation';
+            % Create choisirlanglederotationEditField
+            app.choisirlanglederotationEditField = uieditfield(app.Page4Tab, 'numeric');
+            app.choisirlanglederotationEditField.Position = [239.03125 304 100 22];
+            % Create UIAxes4
+            app.UIAxes4 = uiaxes(app.Page4Tab);
+            title(app.UIAxes4, 'image apres rotation');
+            app.UIAxes4.Position = [378 53 494 370];
+            % Create runButton_3
+            app.runButton_3 = uibutton(app.Page4Tab, 'push');
+            app.runButton_3.ButtonPushedFcn = createCallbackFcn(app, @rotationPushed, true);
+            app.runButton_3.FontSize = 16;
+            app.runButton_3.FontWeight = 'bold';
+            app.runButton_3.FontColor = [1 0 0];
+            app.runButton_3.Position = [124 239 100 27];
+            app.runButton_3.Text = 'run';
+            % Create AppliquerunerotationsurlimagechoisieLabel
+            app.AppliquerunerotationsurlimagechoisieLabel = uilabel(app.Page4Tab);
+            app.AppliquerunerotationsurlimagechoisieLabel.HorizontalAlignment = 'center';
+            app.AppliquerunerotationsurlimagechoisieLabel.FontSize = 22;
+            app.AppliquerunerotationsurlimagechoisieLabel.FontWeight = 'bold';
+            app.AppliquerunerotationsurlimagechoisieLabel.FontColor = [0 0.1647 1];
+            app.AppliquerunerotationsurlimagechoisieLabel.Position = [200.5 483 459 29];
+            app.AppliquerunerotationsurlimagechoisieLabel.Text = 'Appliquer une rotation sur l''image choisie ';
+            % Create Page5Tab
+            app.Page5Tab = uitab(app.TabGroup);
+            app.Page5Tab.Title = 'Page5';
+            app.Page5Tab.ForegroundColor = [1 0 0];
+            app.Page5Tab.Units = 'pixels';
+            % Create UIAxes5
+            app.UIAxes5 = uiaxes(app.Page5Tab);
+            title(app.UIAxes5, 'histogramme d''apparition');
+            xlabel(app.UIAxes5, 'niveau de gris');
+            ylabel(app.UIAxes5, 'frequence');
+            app.UIAxes5.Position = [361 53 418 378];
+            % Create frequencedesniveauxdegrisdelimageButton
+            app.frequencedesniveauxdegrisdelimageButton = uibutton(app.Page5Tab, 'push');
+            app.frequencedesniveauxdegrisdelimageButton.ButtonPushedFcn = createCallbackFcn(app, @frequencedesniveauxdegrisdelimageButtonPushed, true);
+            app.frequencedesniveauxdegrisdelimageButton.FontSize = 16;
+            app.frequencedesniveauxdegrisdelimageButton.FontWeight = 'bold';
+            app.frequencedesniveauxdegrisdelimageButton.FontColor = [1 0 0];
+            app.frequencedesniveauxdegrisdelimageButton.Position = [47.5 413 336 27];
+            app.frequencedesniveauxdegrisdelimageButton.Text = ' frequence des niveaux de gris de l''image';
+            % Create runButton_5
+            app.runButton_5 = uibutton(app.Page5Tab, 'push');
+            app.runButton_5.ButtonPushedFcn = createCallbackFcn(app, @runButton_5Pushed, true);
+            app.runButton_5.FontSize = 16;
+            app.runButton_5.FontWeight = 'bold';
+            app.runButton_5.FontColor = [1 0 0];
+            app.runButton_5.Position = [126 260 180 27];
+            app.runButton_5.Text = 'run';
+            % Create runButton_4
+            app.runButton_4 = uibutton(app.Page5Tab, 'push');
+            app.runButton_4.ButtonPushedFcn = createCallbackFcn(app, @runButton_4Pushed, true);
+            app.runButton_4.FontSize = 16;
+            app.runButton_4.FontWeight = 'bold';
+            app.runButton_4.FontColor = [1 0 0];
+            app.runButton_4.Position = [104.5 112 205 27];
+            app.runButton_4.Text = 'run';
+            % Create numerodeligneLabel
+            app.numerodeligneLabel = uilabel(app.Page5Tab);
+            app.numerodeligneLabel.HorizontalAlignment = 'right';
+            app.numerodeligneLabel.FontSize = 16;
+            app.numerodeligneLabel.FontWeight = 'bold';
+            app.numerodeligneLabel.Position = [72.703125 301 129 20];
+            app.numerodeligneLabel.Text = 'numero de ligne';
+            % Create numerodeligneEditField
+            app.numerodeligneEditField = uieditfield(app.Page5Tab, 'numeric');
+            app.numerodeligneEditField.Position = [216.703125 302 100 22];
+            % Create numerodecolonneEditFieldLabel
+            app.numerodecolonneEditFieldLabel = uilabel(app.Page5Tab);
+            app.numerodecolonneEditFieldLabel.HorizontalAlignment = 'right';
+            app.numerodecolonneEditFieldLabel.FontSize = 16;
+            app.numerodecolonneEditFieldLabel.FontWeight = 'bold';
+            app.numerodecolonneEditFieldLabel.Position = [66.03125 161 153 20];
+            app.numerodecolonneEditFieldLabel.Text = 'numero de colonne';
+            % Create numerodecolonneEditField
+            app.numerodecolonneEditField = uieditfield(app.Page5Tab, 'numeric');
+            app.numerodecolonneEditField.Position = [234.03125 162 100 22];
+            % Create profiledecolonneLabel
+            app.profiledecolonneLabel = uilabel(app.Page5Tab);
+            app.profiledecolonneLabel.FontSize = 16;
+            app.profiledecolonneLabel.FontWeight = 'bold';
+            app.profiledecolonneLabel.FontColor = [0.1961 0.3451 0.9412];
+            app.profiledecolonneLabel.Position = [73 191 153 20];
+            app.profiledecolonneLabel.Text = 'profile de colonne :';
+            % Create profiledeligneLabel
+            app.profiledeligneLabel = uilabel(app.Page5Tab);
+            app.profiledeligneLabel.FontSize = 16;
+            app.profiledeligneLabel.FontWeight = 'bold';
+            app.profiledeligneLabel.FontColor = [0.2235 0.3059 0.9255];
+            app.profiledeligneLabel.Position = [73 333 129 20];
+            app.profiledeligneLabel.Text = 'profile de ligne :';
+            % Create HistogrammesetprofilesLabel
+            app.HistogrammesetprofilesLabel = uilabel(app.Page5Tab);
+            app.HistogrammesetprofilesLabel.FontSize = 22;
+            app.HistogrammesetprofilesLabel.FontWeight = 'bold';
+            app.HistogrammesetprofilesLabel.FontColor = [0.0902 0.0588 0.9686];
+            app.HistogrammesetprofilesLabel.Position = [298 490 273 29];
+            app.HistogrammesetprofilesLabel.Text = 'Histogrammes et profiles';
+            % Create Page6Tab
+            app.Page6Tab = uitab(app.TabGroup);
+            app.Page6Tab.Title = 'Page6';
+            app.Page6Tab.ForegroundColor = [1 0 0];
+            app.Page6Tab.Units = 'pixels';
+            % Create typedebruitDropDownLabel
+            app.typedebruitDropDownLabel = uilabel(app.Page6Tab);
+            app.typedebruitDropDownLabel.HorizontalAlignment = 'right';
+            app.typedebruitDropDownLabel.FontSize = 16;
+            app.typedebruitDropDownLabel.FontWeight = 'bold';
+            app.typedebruitDropDownLabel.Position = [69 434 106 20];
+            app.typedebruitDropDownLabel.Text = 'type de bruit ';
+            % Create typedebruitDropDown
+            app.typedebruitDropDown = uidropdown(app.Page6Tab);
+            app.typedebruitDropDown.Items = {'Salt&pepper', 'Speckle', 'Gaussian'};
+            app.typedebruitDropDown.FontSize = 16;
+            app.typedebruitDropDown.Position = [190 435 112 22];
+            app.typedebruitDropDown.Value = 'Salt&pepper';
+            % Create coefficientdebruitageEditFieldLabel
+            app.coefficientdebruitageEditFieldLabel = uilabel(app.Page6Tab);
+            app.coefficientdebruitageEditFieldLabel.HorizontalAlignment = 'right';
+            app.coefficientdebruitageEditFieldLabel.FontSize = 16;
+            app.coefficientdebruitageEditFieldLabel.FontWeight = 'bold';
+            app.coefficientdebruitageEditFieldLabel.Position = [11.03125 372 176 20];
+            app.coefficientdebruitageEditFieldLabel.Text = 'coefficient de bruitage';
+            % Create coefficientdebruitageEditField
+            app.coefficientdebruitageEditField = uieditfield(app.Page6Tab, 'numeric');
+            app.coefficientdebruitageEditField.Position = [202.03125 373 100 22];
+            % Create typedefiltreDropDownLabel
+            app.typedefiltreDropDownLabel = uilabel(app.Page6Tab);
+            app.typedefiltreDropDownLabel.HorizontalAlignment = 'right';
+            app.typedefiltreDropDownLabel.FontSize = 16;
+            app.typedefiltreDropDownLabel.FontWeight = 'bold';
+            app.typedefiltreDropDownLabel.Position = [81.03125 180 101 20];
+            app.typedefiltreDropDownLabel.Text = 'type de filtre';
+            % Create typedefiltreDropDown
+            app.typedefiltreDropDown = uidropdown(app.Page6Tab);
+            app.typedefiltreDropDown.Items = {'Medium', 'Moyen', 'Laplacien'};
+            app.typedefiltreDropDown.FontSize = 16;
+            app.typedefiltreDropDown.Position = [197.03125 181 100 22];
+            app.typedefiltreDropDown.Value = 'Medium';
+            % Create ajouterBruitButton
+            app.ajouterBruitButton = uibutton(app.Page6Tab, 'push');
+            app.ajouterBruitButton.ButtonPushedFcn = createCallbackFcn(app, @ajouterBruitButtonPushed, true);
+            app.ajouterBruitButton.FontSize = 14;
+            app.ajouterBruitButton.FontWeight = 'bold';
+            app.ajouterBruitButton.FontColor = [1 0 0];
+            app.ajouterBruitButton.Position = [202 318 106 27];
+            app.ajouterBruitButton.Text = ' ajouter Bruit';
+            % Create UIAxes6
+            app.UIAxes6 = uiaxes(app.Page6Tab);
+            title(app.UIAxes6, 'bruit');
+            app.UIAxes6.Position = [411 281 404 242];
+            % Create saisirlatailledufiltreEditFieldLabel
+            app.saisirlatailledufiltreEditFieldLabel = uilabel(app.Page6Tab);
+            app.saisirlatailledufiltreEditFieldLabel.HorizontalAlignment = 'right';
+            app.saisirlatailledufiltreEditFieldLabel.FontSize = 16;
+            app.saisirlatailledufiltreEditFieldLabel.FontWeight = 'bold';
+            app.saisirlatailledufiltreEditFieldLabel.Position = [11.03125 130 169 20];
+            app.saisirlatailledufiltreEditFieldLabel.Text = 'saisir la taille du filtre';
+            % Create saisirlatailledufiltreEditField
+            app.saisirlatailledufiltreEditField = uieditfield(app.Page6Tab, 'numeric');
+            app.saisirlatailledufiltreEditField.Position = [195.03125 131 100 22];
+            % Create ajouterfiltreButton
+            app.ajouterfiltreButton = uibutton(app.Page6Tab, 'push');
+            app.ajouterfiltreButton.ButtonPushedFcn = createCallbackFcn(app, @ajouterfiltreButtonPushed, true);
+            app.ajouterfiltreButton.FontSize = 16;
+            app.ajouterfiltreButton.FontWeight = 'bold';
+            app.ajouterfiltreButton.FontColor = [1 0 0];
+            app.ajouterfiltreButton.Position = [191 86 112 27];
+            app.ajouterfiltreButton.Text = ' ajouter filtre';
+            % Create BruitLabel
+            app.BruitLabel = uilabel(app.Page6Tab);
+            app.BruitLabel.FontSize = 16;
+            app.BruitLabel.FontWeight = 'bold';
+            app.BruitLabel.FontColor = [0.2039 0.2902 0.9333];
+            app.BruitLabel.Position = [17 490 53 20];
+            app.BruitLabel.Text = 'Bruit :';
+            % Create FiltreLabel
+            app.FiltreLabel = uilabel(app.Page6Tab);
+            app.FiltreLabel.FontSize = 16;
+            app.FiltreLabel.FontWeight = 'bold';
+            app.FiltreLabel.FontColor = [0.2392 0.298 0.9529];
+            app.FiltreLabel.Position = [11 223 54 20];
+            app.FiltreLabel.Text = 'Filtre :';
+            % Create UIAxes8
+            app.UIAxes8 = uiaxes(app.Page6Tab);
+            title(app.UIAxes8, 'filtre');
+            app.UIAxes8.Position = [411 7 396 266];
+            % Create calculerPSNRButton
+            app.calculerPSNRButton = uibutton(app.Page6Tab, 'push');
+            app.calculerPSNRButton.ButtonPushedFcn = createCallbackFcn(app, @calculerPSNRButtonPushed, true);
+            app.calculerPSNRButton.Position = [191 11 100 22];
+            app.calculerPSNRButton.Text = 'calculer PSNR';
+            % Create PSNREditFieldLabel
+            app.PSNREditFieldLabel = uilabel(app.Page6Tab);
+            app.PSNREditFieldLabel.HorizontalAlignment = 'right';
+            app.PSNREditFieldLabel.Position = [141.03125 45 39 15];
+            app.PSNREditFieldLabel.Text = 'PSNR';
+            % Create PSNREditField
+            app.PSNREditField = uieditfield(app.Page6Tab, 'numeric');
+            app.PSNREditField.Position = [195.03125 41 100 22];
+        end
+    end
+    methods (Access = public)
+        % Construct app
+        function app = traitement_image()
+            % Create and configure components
+            createComponents(app)
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+            % Execute the startup function
+            runStartupFcn(app, @StartupFcn)
+            if nargout == 0
+                clear app
+            end
+        end
+        % Code that executes before app deletion
+        function delete(app)
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
+classdef traitement_image < matlab.apps.AppBase
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                        matlab.ui.Figure
+        TabGroup                        matlab.ui.container.TabGroup
+        AccueilTab                      matlab.ui.container.Tab
+        UIAxes7                         matlab.ui.control.UIAxes
+        InterfacetraitementdimageLabel  matlab.ui.control.Label
+        RaliseparAfrahsalemWafaguizaniLabel  matlab.ui.control.Label
+        EncadresparMMohamedKallelLabel  matlab.ui.control.Label
+        GEC3Label                       matlab.ui.control.Label
+        Page1Tab                        matlab.ui.container.Tab
+        selectionneruneImageButton      matlab.ui.control.Button
+        UIAxes                          matlab.ui.control.UIAxes
+        hauteurdelimageEditFieldLabel   matlab.ui.control.Label
+        hauteurdelimageEditField        matlab.ui.control.NumericEditField
+        largeurdelimageEditFieldLabel   matlab.ui.control.Label
+        largeurdelimageEditField        matlab.ui.control.NumericEditField
+        TailledelimageLabel             matlab.ui.control.Label
+        Page2Tab                        matlab.ui.container.Tab
+        AfficheruneportiondelimageLabel  matlab.ui.control.Label
+        debutdeLigneEditFieldLabel      matlab.ui.control.Label
+        debutdeLigneEditField           matlab.ui.control.NumericEditField
+        findeLigneLabel                 matlab.ui.control.Label
+        findeLigneEditField             matlab.ui.control.NumericEditField
+        UIAxes2                         matlab.ui.control.UIAxes
+        runButton                       matlab.ui.control.Button
+        debutdeColonneEditFieldLabel    matlab.ui.control.Label
+        debutdeColonneEditField         matlab.ui.control.NumericEditField
+        findeColonneEditFieldLabel      matlab.ui.control.Label
+        findeColonneEditField           matlab.ui.control.NumericEditField
+        parametresLabel                 matlab.ui.control.Label
+        Page3Tab                        matlab.ui.container.Tab
+        niveaudegrisEditFieldLabel      matlab.ui.control.Label
+        niveaudegrisEditField           matlab.ui.control.NumericEditField
+        UIAxes3                         matlab.ui.control.UIAxes
+        nombredapparitionEditFieldLabel  matlab.ui.control.Label
+        nombredapparitionEditField      matlab.ui.control.NumericEditField
+        runButton_2                     matlab.ui.control.Button
+        ScanningdelimageLabel           matlab.ui.control.Label
+        Page4Tab                        matlab.ui.container.Tab
+        choisirlanglederotationEditFieldLabel  matlab.ui.control.Label
+        choisirlanglederotationEditField  matlab.ui.control.NumericEditField
+        UIAxes4                         matlab.ui.control.UIAxes
+        runButton_3                     matlab.ui.control.Button
+        AppliquerunerotationsurlimagechoisieLabel  matlab.ui.control.Label
+        Page5Tab                        matlab.ui.container.Tab
+        UIAxes5                         matlab.ui.control.UIAxes
+        frequencedesniveauxdegrisdelimageButton  matlab.ui.control.Button
+        runButton_5                     matlab.ui.control.Button
+        runButton_4                     matlab.ui.control.Button
+        numerodeligneLabel              matlab.ui.control.Label
+        numerodeligneEditField          matlab.ui.control.NumericEditField
+        numerodecolonneEditFieldLabel   matlab.ui.control.Label
+        numerodecolonneEditField        matlab.ui.control.NumericEditField
+        profiledecolonneLabel           matlab.ui.control.Label
+        profiledeligneLabel             matlab.ui.control.Label
+        HistogrammesetprofilesLabel     matlab.ui.control.Label
+        Page6Tab                        matlab.ui.container.Tab
+        typedebruitDropDownLabel        matlab.ui.control.Label
+        typedebruitDropDown             matlab.ui.control.DropDown
+        coefficientdebruitageEditFieldLabel  matlab.ui.control.Label
+        coefficientdebruitageEditField  matlab.ui.control.NumericEditField
+        typedefiltreDropDownLabel       matlab.ui.control.Label
+        typedefiltreDropDown            matlab.ui.control.DropDown
+        ajouterBruitButton              matlab.ui.control.Button
+        UIAxes6                         matlab.ui.control.UIAxes
+        saisirlatailledufiltreEditFieldLabel  matlab.ui.control.Label
+        saisirlatailledufiltreEditField  matlab.ui.control.NumericEditField
+        ajouterfiltreButton             matlab.ui.control.Button
+        BruitLabel                      matlab.ui.control.Label
+        FiltreLabel                     matlab.ui.control.Label
+        UIAxes8                         matlab.ui.control.UIAxes
+        calculerPSNRButton              matlab.ui.control.Button
+        PSNREditFieldLabel              matlab.ui.control.Label
+        PSNREditField                   matlab.ui.control.NumericEditField
+    end
+    methods (Access = private)
+    
+        
+    end
+   
+    methods (Access = private)
+        % Code that executes after component creation
+        function StartupFcn(app)
+         
+        log = imread('C:\Users\Dell\Desktop\image.jfif');
+        imshow(log, 'Parent', app.UIAxes7, 'InitialMagnification', 'fit');
+        axis(app.UIAxes7, 'image');  
+        axis(app.UIAxes7, 'off');    
+        end
+        % Button pushed function: selectionneruneImageButton
+        function selectionneruneImageButtonPushed(app, event)
+            
+            [file, path] = uigetfile({'*.jpg;*.png;*.bmp;*.tif', 'Image Files (*.jpg, *.png, *.bmp, *.tif)'});
+    if isequal(file, 0)
+        disp('Aucune image sélectionnée.');
+    else
+        pathedelimage = fullfile(path, file);
+        image = imread(pathedelimage); 
+        imshow(image, 'Parent', app.UIAxes); 
+        app.hauteurdelimageEditField.Value = size(image, 1); 
+        app.largeurdelimageEditField.Value = size(image, 2); 
+    end
+    
+        end
+        % Button pushed function: runButton
+        function runButtonPushed(app, event)
+     
+    if isempty(app.UIAxes.Children)
+        uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image.', 'Aucune image chargée');
+        return;
+    end 
+    image = app.UIAxes.Children.CData; 
+    [h, l, ~] = size(image);
+    debutLigne = app.debutdeLigneEditField.Value;  
+    finLigne = app.findeLigneEditField.Value;      
+    debutColonne = app.debutdeColonneEditField.Value;  
+    finColonne = app.findeColonneEditField.Value;      
+    if debutLigne < 1 || finLigne > h || debutLigne >= finLigne
+    uialert(app.UIFigure, 'La valeur de ligne est invalide, entrez une autre .', 'Erreur de sélection des lignes');
+    return;
+    end          
+    if debutColonne < 1 || finColonne > l || debutColonne >= finColonne
+    uialert(app.UIFigure, 'La valeur de colonne est invalide, entrez une autre.', 'Erreur de sélection des colonnes');
+    return;
+    end
+    bloc = image(debutLigne:finLigne, debutColonne:finColonne, :);
+    imshow(bloc, 'Parent', app.UIAxes2);
+            
+        end
+        % Button pushed function: runButton_2
+        function chercherniveaudegrisButtonPushed(app, event)
+        
+    if isempty(app.UIAxes.Children)
+        uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+        return;
+    end
+     image = app.UIAxes.Children.CData;
+    if size(image, 3) == 3
+        g = rgb2gray(image);  
+    else
+        g = image;  
+    end
+     ng = app.niveaudegrisEditField.Value;  
+         if ng < 0 || ng > 255
+             uialert(app.UIFigure, 'Le niveau de gris doit être entre 0 et 255.', 'Niveau de gris invalide');
+             return;
+         end
+        m = sum(g(:) == ng);%m freqence de nv de gris dans imgg
+        app.nombredapparitionEditField.Value = m;
+        imgscannee = 255 * ones(size(g), 'uint8');
+        imgscannee(g == ng) = ng;
+        imshow(imgscannee, 'Parent', app.UIAxes3);  
+        end
+        % Button pushed function: runButton_3
+        function rotationPushed(app, event)
+             if isempty(app.UIAxes.Children)
+      uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+      return;
+             end
+            image = app.UIAxes.Children.CData;
+            angle = app.choisirlanglederotationEditField.Value;  
+             if isempty(angle) || ~isnumeric(angle)
+               uialert(app.UIFigure, 'Veuillez entrer un angle de rotation valide.', 'Angle invalide');
+               return;
+             end
+             imgrota = imrotate(image, angle);
+             imshow(imgrota, 'Parent', app.UIAxes4);  
+        end
+        % Button pushed function: 
+        % frequencedesniveauxdegrisdelimageButton
+        function frequencedesniveauxdegrisdelimageButtonPushed(app, event)
+             if isempty(app.UIAxes.Children)
+      uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+      return;
+             end
+            image = app.UIAxes.Children.CData;
+            if size(image, 3) == 3
+        g = rgb2gray(image);
+            end
+            h = imhist(g);
+            bar(app.UIAxes5, h);
+            title(app.UIAxes5, 'Histogramme des niveaux de gris');
+            xlabel(app.UIAxes5, 'Niveau de gris');
+            ylabel(app.UIAxes5, 'Nombre de pixels');
+        end
+        % Button pushed function: runButton_5
+        function runButton_5Pushed(app, event)
+            if isempty(app.UIAxes.Children)
+    uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+    return;
+            end
+            image = app.UIAxes.Children.CData;
+            if size(image, 3) == 3
+              image = rgb2gray(image);
+            end
+            ligne = app.numerodeligneEditField.Value;
+             if ligne < 1 || ligne > size(image, 1)
+        uialert(app.UIFigure, 'Le numéro de ligne est invalide,choisissez autre', 'Erreur');
+        return;
+             end
+              profile = image(ligne, :);
+             plot(app.UIAxes5,profile);
+             title(app.UIAxes5, ['Profil de la ligne ', num2str(ligne)]);
+             xlabel(app.UIAxes5, 'Colonne');
+             ylabel(app.UIAxes5, 'Valeur de pixel');
+        end
+        % Button pushed function: runButton_4
+        function runButton_4Pushed(app, event)
+             if isempty(app.UIAxes.Children)
+    uialert(app.UIFigure, 'Veuillez d''abord sélectionner une image dans tab1.', 'Aucune image chargée');
+    return;
+             end
+             image = app.UIAxes.Children.CData;
+             if size(image, 3) == 3
+        image = rgb2gray(image);
+             end
+              colonne = app.numerodecolonneEditField.Value;
+    if colonne < 1 || colonne > size(image, 2)
+        uialert(app.UIFigure, 'Le numéro de colonne est invalide,choisissez autre', 'Erreur');
+        return;
+    end
+             profile = image(:, colonne);
+    plot(app.UIAxes5, profile);
+    title(app.UIAxes5, ['Profil de la colonne ', num2str(colonne)]);
+    xlabel(app.UIAxes5, 'Ligne');
+    ylabel(app.UIAxes5, 'Valeur de pixel');
+        end
+        % Button pushed function: ajouterBruitButton
+        function ajouterBruitButtonPushed(app, event)
+             if isempty(app.UIAxes.Children)
+      uialert(app.UIFigure, 'Veuillez charger une image dans page 1 avant d''ajouter du bruit.', 'Aucune image chargée');
+      return;
+             end
+             image = app.UIAxes.Children.CData;
+              bruit = app.typedebruitDropDown.Value; 
+              co = app.coefficientdebruitageEditField.Value; 
+             if co < 0 || co > 1
+     uialert(app.UIFigure, 'Le coefficient de bruitage doit être entre 0 et 1.', 'Valeur de bruit invalide');
+     return;
+             end
+              switch bruit
+        case 'Salt&pepper'
+            i = imnoise(image, 'salt & pepper', co);
+        case 'Gaussian'
+            i = imnoise(image, 'gaussian', 0, co);
+        case 'Speckle'
+           i = imnoise(image, 'speckle', co);
+        otherwise
+            uialert(app.UIFigure, 'Type de bruit non reconnu.', 'Erreur');
+            return;
+              end
+    imshow(i, 'Parent', app.UIAxes6);
+        end
+        % Button pushed function: ajouterfiltreButton
+        function ajouterfiltreButtonPushed(app, event)
+            
+             tailleFiltre = app.saisirlatailledufiltreEditField.Value;
+              hauteurImage = app.hauteurdelimageEditField.Value;
+              largeurImage = app.largeurdelimageEditField.Value;
+               if isempty(app.UIAxes6.Children)
+       uialert(app.UIFigure, 'Aucune image n''a été trouvée.', 'Erreur');
+       return;
+               end
+              ImageSelectionnee = app.UIAxes6.Children.CData;
+             if isempty(ImageSelectionnee)
+    uialert(app.UIFigure, 'Veuillez sélectionner une image dans axe 6.', 'Erreur');
+    return;
+             end
+            if tailleFiltre > min(hauteurImage, largeurImage)
+    uialert(app.UIFigure, 'La taille du filtre est trop grande pour l''image.', 'Erreur');
+    return;
+            elseif mod(tailleFiltre, 2) == 0
+    uialert(app.UIFigure, 'La taille du filtre doit être impaire (ex : 3, 5, 7, etc.)', 'Erreur');
+    return;
+            end
+               switch app.typedefiltreDropDown.Value
+     case 'Medium'
+         if ndims(ImageSelectionnee) == 3
+             imageFiltree(:,:,1) = medfilt2(ImageSelectionnee(:,:,1), [tailleFiltre tailleFiltre]);
+             imageFiltree(:,:,2) = medfilt2(ImageSelectionnee(:,:,2), [tailleFiltre tailleFiltre]);
+             imageFiltree(:,:,3) = medfilt2(ImageSelectionnee(:,:,3), [tailleFiltre tailleFiltre]);
+         else
+            imageFiltree = medfilt2(ImageSelectionnee, [tailleFiltre tailleFiltre]);
+        end
+    case 'Moyen'
+        h = fspecial('average', [tailleFiltre tailleFiltre]);
+        imageFiltree = imfilter(ImageSelectionnee, h);
+    case 'Laplacien'
+        h = fspecial('laplacian');
+        imageFiltree = imfilter(ImageSelectionnee, h);
+    otherwise
+        uialert(app.UIFigure, 'Type de filtre inconnu.', 'Erreur');
+        return;
+               end
+           
+            imshow(imageFiltree, 'Parent', app.UIAxes8);
+            
+        end
+        % Button pushed function: calculerPSNRButton
+        function calculerPSNRButtonPushed(app, event)
+            
+    imgOriginale = getimage(app.UIAxes);  
+       
+    imgFiltree = getimage(app.UIAxes8);  
+    
+    
+    mse = immse(imgFiltree, imgOriginale);
+    
+    psnrValue = 10 * log10(255^2 / mse);
+    
+    app.PSNREditField.Value = psnrValue;
+        end
+        % Callback function
+        function calculerPSNRButton_2Pushed(app, event)
+             
+            imgOriginale = getimage(app.UIAxes);  
+            
+            imgBruitee = getimage(app.UIAxes6);  
+            
+            mseValue = immse(imgBruitee, imgOriginale);
+            
+            psnrValue = 10 * log10(255^2 / mseValue);
+            
+           
+            app.PSNREditField_2.Value = num2str(psnrValue);  
+            
+        end
+    end
+    % App initialization and construction
+    methods (Access = private)
+        % Create UIFigure and components
+        function createComponents(app)
+            % Create UIFigure
+            app.UIFigure = uifigure;
+            app.UIFigure.Position = [100 100 1127 789];
+            app.UIFigure.Name = 'UI Figure';
+            setAutoResize(app, app.UIFigure, true)
+            % Create TabGroup
+            app.TabGroup = uitabgroup(app.UIFigure);
+            app.TabGroup.Position = [131 106 852 574];
+            % Create AccueilTab
+            app.AccueilTab = uitab(app.TabGroup);
+            app.AccueilTab.Title = 'Accueil';
+            app.AccueilTab.BackgroundColor = [0.9373 0.9373 0.9373];
+            app.AccueilTab.ForegroundColor = [1 0 0];
+            app.AccueilTab.Units = 'pixels';
+            % Create UIAxes7
+            app.UIAxes7 = uiaxes(app.AccueilTab);
+            app.UIAxes7.Position = [55 321 394 197];
+            % Create InterfacetraitementdimageLabel
+            app.InterfacetraitementdimageLabel = uilabel(app.AccueilTab);
+            app.InterfacetraitementdimageLabel.HorizontalAlignment = 'center';
+            app.InterfacetraitementdimageLabel.FontSize = 48;
+            app.InterfacetraitementdimageLabel.FontWeight = 'bold';
+            app.InterfacetraitementdimageLabel.FontColor = [1 0 0];
+            app.InterfacetraitementdimageLabel.Position = [101.5 234 672 63];
+            app.InterfacetraitementdimageLabel.Text = 'Interface traitement d''image ';
+            % Create RaliseparAfrahsalemWafaguizaniLabel
+            app.RaliseparAfrahsalemWafaguizaniLabel = uilabel(app.AccueilTab);
+            app.RaliseparAfrahsalemWafaguizaniLabel.FontSize = 24;
+            app.RaliseparAfrahsalemWafaguizaniLabel.FontWeight = 'bold';
+            app.RaliseparAfrahsalemWafaguizaniLabel.FontAngle = 'italic';
+            app.RaliseparAfrahsalemWafaguizaniLabel.Position = [178 128 492 31];
+            app.RaliseparAfrahsalemWafaguizaniLabel.Text = 'Réalisée par : Afrah salem & Wafa guizani';
+            % Create EncadresparMMohamedKallelLabel
+            app.EncadresparMMohamedKallelLabel = uilabel(app.AccueilTab);
+            app.EncadresparMMohamedKallelLabel.FontSize = 24;
+            app.EncadresparMMohamedKallelLabel.FontWeight = 'bold';
+            app.EncadresparMMohamedKallelLabel.FontAngle = 'italic';
+            app.EncadresparMMohamedKallelLabel.Position = [208 98 415 31];
+            app.EncadresparMMohamedKallelLabel.Text = 'Encadrées par : M.Mohamed Kallel ';
+            % Create GEC3Label
+            app.GEC3Label = uilabel(app.AccueilTab);
+            app.GEC3Label.FontSize = 18;
+            app.GEC3Label.FontWeight = 'bold';
+            app.GEC3Label.FontAngle = 'italic';
+            app.GEC3Label.Position = [384 63 65 23];
+            app.GEC3Label.Text = '2GEC3';
+            % Create Page1Tab
+            app.Page1Tab = uitab(app.TabGroup);
+            app.Page1Tab.Title = 'Page1';
+            app.Page1Tab.ForegroundColor = [1 0 0];
+            app.Page1Tab.Units = 'pixels';
+            % Create selectionneruneImageButton
+            app.selectionneruneImageButton = uibutton(app.Page1Tab, 'push');
+            app.selectionneruneImageButton.ButtonPushedFcn = createCallbackFcn(app, @selectionneruneImageButtonPushed, true);
+            app.selectionneruneImageButton.FontSize = 20;
+            app.selectionneruneImageButton.FontWeight = 'bold';
+            app.selectionneruneImageButton.Position = [62 471 762 40];
+            app.selectionneruneImageButton.Text = 'selectionner une Image';
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.Page1Tab);
+            title(app.UIAxes, 'image selectionnee');
+            app.UIAxes.Position = [25 27 582 425];
+            % Create hauteurdelimageEditFieldLabel
+            app.hauteurdelimageEditFieldLabel = uilabel(app.Page1Tab);
+            app.hauteurdelimageEditFieldLabel.HorizontalAlignment = 'right';
+            app.hauteurdelimageEditFieldLabel.FontSize = 16;
+            app.hauteurdelimageEditFieldLabel.FontWeight = 'bold';
+            app.hauteurdelimageEditFieldLabel.Position = [613 253 146 20];
+            app.hauteurdelimageEditFieldLabel.Text = 'hauteur de l''image';
+            % Create hauteurdelimageEditField
+            app.hauteurdelimageEditField = uieditfield(app.Page1Tab, 'numeric');
+            app.hauteurdelimageEditField.Position = [774 254 70 22];
+            % Create largeurdelimageEditFieldLabel
+            app.largeurdelimageEditFieldLabel = uilabel(app.Page1Tab);
+            app.largeurdelimageEditFieldLabel.HorizontalAlignment = 'right';
+            app.largeurdelimageEditFieldLabel.FontSize = 16;
+            app.largeurdelimageEditFieldLabel.FontWeight = 'bold';
+            app.largeurdelimageEditFieldLabel.Position = [617 207 142 20];
+            app.largeurdelimageEditFieldLabel.Text = 'largeur de l''image';
+            % Create largeurdelimageEditField
+            app.largeurdelimageEditField = uieditfield(app.Page1Tab, 'numeric');
+            app.largeurdelimageEditField.Position = [774 208 70 22];
+            % Create TailledelimageLabel
+            app.TailledelimageLabel = uilabel(app.Page1Tab);
+            app.TailledelimageLabel.FontSize = 18;
+            app.TailledelimageLabel.FontWeight = 'bold';
+            app.TailledelimageLabel.FontColor = [1 0 0];
+            app.TailledelimageLabel.Position = [695 304 149 23];
+            app.TailledelimageLabel.Text = 'Taille de l''image ';
+            % Create Page2Tab
+            app.Page2Tab = uitab(app.TabGroup);
+            app.Page2Tab.Title = 'Page2';
+            app.Page2Tab.ForegroundColor = [1 0 0];
+            app.Page2Tab.Units = 'pixels';
+            % Create AfficheruneportiondelimageLabel
+            app.AfficheruneportiondelimageLabel = uilabel(app.Page2Tab);
+            app.AfficheruneportiondelimageLabel.FontSize = 18;
+            app.AfficheruneportiondelimageLabel.FontWeight = 'bold';
+            app.AfficheruneportiondelimageLabel.FontColor = [0 0.0314 1];
+            app.AfficheruneportiondelimageLabel.Position = [291 481 278 23];
+            app.AfficheruneportiondelimageLabel.Text = 'Afficher une portion de l''image ';
+            % Create debutdeLigneEditFieldLabel
+            app.debutdeLigneEditFieldLabel = uilabel(app.Page2Tab);
+            app.debutdeLigneEditFieldLabel.HorizontalAlignment = 'center';
+            app.debutdeLigneEditFieldLabel.FontSize = 16;
+            app.debutdeLigneEditFieldLabel.FontWeight = 'bold';
+            app.debutdeLigneEditFieldLabel.Position = [97 373 119 20];
+            app.debutdeLigneEditFieldLabel.Text = 'debut de Ligne';
+            % Create debutdeLigneEditField
+            app.debutdeLigneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.debutdeLigneEditField.HorizontalAlignment = 'center';
+            app.debutdeLigneEditField.Position = [217 372 66 22];
+            % Create findeLigneLabel
+            app.findeLigneLabel = uilabel(app.Page2Tab);
+            app.findeLigneLabel.HorizontalAlignment = 'center';
+            app.findeLigneLabel.FontSize = 16;
+            app.findeLigneLabel.FontWeight = 'bold';
+            app.findeLigneLabel.Position = [119 328 95 20];
+            app.findeLigneLabel.Text = 'fin de Ligne';
+            % Create findeLigneEditField
+            app.findeLigneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.findeLigneEditField.HorizontalAlignment = 'center';
+            app.findeLigneEditField.Position = [218 329 65 22];
+            % Create UIAxes2
+            app.UIAxes2 = uiaxes(app.Page2Tab);
+            title(app.UIAxes2, 'portion de l''image');
+            app.UIAxes2.Position = [416 87 446 370];
+            % Create runButton
+            app.runButton = uibutton(app.Page2Tab, 'push');
+            app.runButton.ButtonPushedFcn = createCallbackFcn(app, @runButtonPushed, true);
+            app.runButton.FontSize = 16;
+            app.runButton.FontWeight = 'bold';
+            app.runButton.FontColor = [1 0 0];
+            app.runButton.Position = [157 166 100 27];
+            app.runButton.Text = 'run';
+            % Create debutdeColonneEditFieldLabel
+            app.debutdeColonneEditFieldLabel = uilabel(app.Page2Tab);
+            app.debutdeColonneEditFieldLabel.HorizontalAlignment = 'center';
+            app.debutdeColonneEditFieldLabel.FontSize = 16;
+            app.debutdeColonneEditFieldLabel.FontWeight = 'bold';
+            app.debutdeColonneEditFieldLabel.Position = [81 282 141 20];
+            app.debutdeColonneEditFieldLabel.Text = 'debut de Colonne';
+            % Create debutdeColonneEditField
+            app.debutdeColonneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.debutdeColonneEditField.HorizontalAlignment = 'center';
+            app.debutdeColonneEditField.Position = [219 283 64 22];
+            % Create findeColonneEditFieldLabel
+            app.findeColonneEditFieldLabel = uilabel(app.Page2Tab);
+            app.findeColonneEditFieldLabel.HorizontalAlignment = 'center';
+            app.findeColonneEditFieldLabel.FontSize = 16;
+            app.findeColonneEditFieldLabel.FontWeight = 'bold';
+            app.findeColonneEditFieldLabel.Position = [100 241 117 20];
+            app.findeColonneEditFieldLabel.Text = 'fin de Colonne';
+            % Create findeColonneEditField
+            app.findeColonneEditField = uieditfield(app.Page2Tab, 'numeric');
+            app.findeColonneEditField.HorizontalAlignment = 'center';
+            app.findeColonneEditField.Position = [219 242 64 22];
+            % Create parametresLabel
+            app.parametresLabel = uilabel(app.Page2Tab);
+            app.parametresLabel.FontSize = 16;
+            app.parametresLabel.FontWeight = 'bold';
+            app.parametresLabel.Position = [100 415 102 20];
+            app.parametresLabel.Text = 'parametres :';
+            % Create Page3Tab
+            app.Page3Tab = uitab(app.TabGroup);
+            app.Page3Tab.Title = 'Page3';
+            app.Page3Tab.ForegroundColor = [1 0 0];
+            app.Page3Tab.Units = 'pixels';
+            % Create niveaudegrisEditFieldLabel
+            app.niveaudegrisEditFieldLabel = uilabel(app.Page3Tab);
+            app.niveaudegrisEditFieldLabel.HorizontalAlignment = 'center';
+            app.niveaudegrisEditFieldLabel.FontSize = 16;
+            app.niveaudegrisEditFieldLabel.FontWeight = 'bold';
+            app.niveaudegrisEditFieldLabel.Position = [54.53125 360 178 20];
+            app.niveaudegrisEditFieldLabel.Text = 'niveau de gris';
+            % Create niveaudegrisEditField
+            app.niveaudegrisEditField = uieditfield(app.Page3Tab, 'numeric');
+            app.niveaudegrisEditField.Position = [229.015625 361 105.015625 22];
+            % Create UIAxes3
+            app.UIAxes3 = uiaxes(app.Page3Tab);
+            title(app.UIAxes3, 'image scanne');
+            app.UIAxes3.Position = [362 50 522 380];
+            % Create nombredapparitionEditFieldLabel
+            app.nombredapparitionEditFieldLabel = uilabel(app.Page3Tab);
+            app.nombredapparitionEditFieldLabel.HorizontalAlignment = 'center';
+            app.nombredapparitionEditFieldLabel.FontSize = 16;
+            app.nombredapparitionEditFieldLabel.FontWeight = 'bold';
+            app.nombredapparitionEditFieldLabel.Position = [54 315 160 20];
+            app.nombredapparitionEditFieldLabel.Text = 'nombre d''apparition';
+            % Create nombredapparitionEditField
+            app.nombredapparitionEditField = uieditfield(app.Page3Tab, 'numeric');
+            app.nombredapparitionEditField.Position = [229 316 105 22];
+            % Create runButton_2
+            app.runButton_2 = uibutton(app.Page3Tab, 'push');
+            app.runButton_2.ButtonPushedFcn = createCallbackFcn(app, @chercherniveaudegrisButtonPushed, true);
+            app.runButton_2.FontSize = 16;
+            app.runButton_2.FontWeight = 'bold';
+            app.runButton_2.FontColor = [1 0 0];
+            app.runButton_2.Position = [122 222 100 27];
+            app.runButton_2.Text = 'run';
+            % Create ScanningdelimageLabel
+            app.ScanningdelimageLabel = uilabel(app.Page3Tab);
+            app.ScanningdelimageLabel.FontSize = 22;
+            app.ScanningdelimageLabel.FontWeight = 'bold';
+            app.ScanningdelimageLabel.FontColor = [0.0745 0.0745 0.9255];
+            app.ScanningdelimageLabel.Position = [333 481 225 29];
+            app.ScanningdelimageLabel.Text = 'Scanning de l''image ';
+            % Create Page4Tab
+            app.Page4Tab = uitab(app.TabGroup);
+            app.Page4Tab.Title = 'Page4';
+            app.Page4Tab.ForegroundColor = [1 0 0];
+            app.Page4Tab.Units = 'pixels';
+            % Create choisirlanglederotationEditFieldLabel
+            app.choisirlanglederotationEditFieldLabel = uilabel(app.Page4Tab);
+            app.choisirlanglederotationEditFieldLabel.HorizontalAlignment = 'right';
+            app.choisirlanglederotationEditFieldLabel.FontSize = 16;
+            app.choisirlanglederotationEditFieldLabel.FontWeight = 'bold';
+            app.choisirlanglederotationEditFieldLabel.Position = [23.03125 303 201 20];
+            app.choisirlanglederotationEditFieldLabel.Text = 'choisir l''angle de rotation';
+            % Create choisirlanglederotationEditField
+            app.choisirlanglederotationEditField = uieditfield(app.Page4Tab, 'numeric');
+            app.choisirlanglederotationEditField.Position = [239.03125 304 100 22];
+            % Create UIAxes4
+            app.UIAxes4 = uiaxes(app.Page4Tab);
+            title(app.UIAxes4, 'image apres rotation');
+            app.UIAxes4.Position = [378 53 494 370];
+            % Create runButton_3
+            app.runButton_3 = uibutton(app.Page4Tab, 'push');
+            app.runButton_3.ButtonPushedFcn = createCallbackFcn(app, @rotationPushed, true);
+            app.runButton_3.FontSize = 16;
+            app.runButton_3.FontWeight = 'bold';
+            app.runButton_3.FontColor = [1 0 0];
+            app.runButton_3.Position = [124 239 100 27];
+            app.runButton_3.Text = 'run';
+            % Create AppliquerunerotationsurlimagechoisieLabel
+            app.AppliquerunerotationsurlimagechoisieLabel = uilabel(app.Page4Tab);
+            app.AppliquerunerotationsurlimagechoisieLabel.HorizontalAlignment = 'center';
+            app.AppliquerunerotationsurlimagechoisieLabel.FontSize = 22;
+            app.AppliquerunerotationsurlimagechoisieLabel.FontWeight = 'bold';
+            app.AppliquerunerotationsurlimagechoisieLabel.FontColor = [0 0.1647 1];
+            app.AppliquerunerotationsurlimagechoisieLabel.Position = [200.5 483 459 29];
+            app.AppliquerunerotationsurlimagechoisieLabel.Text = 'Appliquer une rotation sur l''image choisie ';
+            % Create Page5Tab
+            app.Page5Tab = uitab(app.TabGroup);
+            app.Page5Tab.Title = 'Page5';
+            app.Page5Tab.ForegroundColor = [1 0 0];
+            app.Page5Tab.Units = 'pixels';
+            % Create UIAxes5
+            app.UIAxes5 = uiaxes(app.Page5Tab);
+            title(app.UIAxes5, 'histogramme d''apparition');
+            xlabel(app.UIAxes5, 'niveau de gris');
+            ylabel(app.UIAxes5, 'frequence');
+            app.UIAxes5.Position = [361 53 418 378];
+            % Create frequencedesniveauxdegrisdelimageButton
+            app.frequencedesniveauxdegrisdelimageButton = uibutton(app.Page5Tab, 'push');
+            app.frequencedesniveauxdegrisdelimageButton.ButtonPushedFcn = createCallbackFcn(app, @frequencedesniveauxdegrisdelimageButtonPushed, true);
+            app.frequencedesniveauxdegrisdelimageButton.FontSize = 16;
+            app.frequencedesniveauxdegrisdelimageButton.FontWeight = 'bold';
+            app.frequencedesniveauxdegrisdelimageButton.FontColor = [1 0 0];
+            app.frequencedesniveauxdegrisdelimageButton.Position = [47.5 413 336 27];
+            app.frequencedesniveauxdegrisdelimageButton.Text = ' frequence des niveaux de gris de l''image';
+            % Create runButton_5
+            app.runButton_5 = uibutton(app.Page5Tab, 'push');
+            app.runButton_5.ButtonPushedFcn = createCallbackFcn(app, @runButton_5Pushed, true);
+            app.runButton_5.FontSize = 16;
+            app.runButton_5.FontWeight = 'bold';
+            app.runButton_5.FontColor = [1 0 0];
+            app.runButton_5.Position = [126 260 180 27];
+            app.runButton_5.Text = 'run';
+            % Create runButton_4
+            app.runButton_4 = uibutton(app.Page5Tab, 'push');
+            app.runButton_4.ButtonPushedFcn = createCallbackFcn(app, @runButton_4Pushed, true);
+            app.runButton_4.FontSize = 16;
+            app.runButton_4.FontWeight = 'bold';
+            app.runButton_4.FontColor = [1 0 0];
+            app.runButton_4.Position = [104.5 112 205 27];
+            app.runButton_4.Text = 'run';
+            % Create numerodeligneLabel
+            app.numerodeligneLabel = uilabel(app.Page5Tab);
+            app.numerodeligneLabel.HorizontalAlignment = 'right';
+            app.numerodeligneLabel.FontSize = 16;
+            app.numerodeligneLabel.FontWeight = 'bold';
+            app.numerodeligneLabel.Position = [72.703125 301 129 20];
+            app.numerodeligneLabel.Text = 'numero de ligne';
+            % Create numerodeligneEditField
+            app.numerodeligneEditField = uieditfield(app.Page5Tab, 'numeric');
+            app.numerodeligneEditField.Position = [216.703125 302 100 22];
+            % Create numerodecolonneEditFieldLabel
+            app.numerodecolonneEditFieldLabel = uilabel(app.Page5Tab);
+            app.numerodecolonneEditFieldLabel.HorizontalAlignment = 'right';
+            app.numerodecolonneEditFieldLabel.FontSize = 16;
+            app.numerodecolonneEditFieldLabel.FontWeight = 'bold';
+            app.numerodecolonneEditFieldLabel.Position = [66.03125 161 153 20];
+            app.numerodecolonneEditFieldLabel.Text = 'numero de colonne';
+            % Create numerodecolonneEditField
+            app.numerodecolonneEditField = uieditfield(app.Page5Tab, 'numeric');
+            app.numerodecolonneEditField.Position = [234.03125 162 100 22];
+            % Create profiledecolonneLabel
+            app.profiledecolonneLabel = uilabel(app.Page5Tab);
+            app.profiledecolonneLabel.FontSize = 16;
+            app.profiledecolonneLabel.FontWeight = 'bold';
+            app.profiledecolonneLabel.FontColor = [0.1961 0.3451 0.9412];
+            app.profiledecolonneLabel.Position = [73 191 153 20];
+            app.profiledecolonneLabel.Text = 'profile de colonne :';
+            % Create profiledeligneLabel
+            app.profiledeligneLabel = uilabel(app.Page5Tab);
+            app.profiledeligneLabel.FontSize = 16;
+            app.profiledeligneLabel.FontWeight = 'bold';
+            app.profiledeligneLabel.FontColor = [0.2235 0.3059 0.9255];
+            app.profiledeligneLabel.Position = [73 333 129 20];
+            app.profiledeligneLabel.Text = 'profile de ligne :';
+            % Create HistogrammesetprofilesLabel
+            app.HistogrammesetprofilesLabel = uilabel(app.Page5Tab);
+            app.HistogrammesetprofilesLabel.FontSize = 22;
+            app.HistogrammesetprofilesLabel.FontWeight = 'bold';
+            app.HistogrammesetprofilesLabel.FontColor = [0.0902 0.0588 0.9686];
+            app.HistogrammesetprofilesLabel.Position = [298 490 273 29];
+            app.HistogrammesetprofilesLabel.Text = 'Histogrammes et profiles';
+            % Create Page6Tab
+            app.Page6Tab = uitab(app.TabGroup);
+            app.Page6Tab.Title = 'Page6';
+            app.Page6Tab.ForegroundColor = [1 0 0];
+            app.Page6Tab.Units = 'pixels';
+            % Create typedebruitDropDownLabel
+            app.typedebruitDropDownLabel = uilabel(app.Page6Tab);
+            app.typedebruitDropDownLabel.HorizontalAlignment = 'right';
+            app.typedebruitDropDownLabel.FontSize = 16;
+            app.typedebruitDropDownLabel.FontWeight = 'bold';
+            app.typedebruitDropDownLabel.Position = [69 434 106 20];
+            app.typedebruitDropDownLabel.Text = 'type de bruit ';
+            % Create typedebruitDropDown
+            app.typedebruitDropDown = uidropdown(app.Page6Tab);
+            app.typedebruitDropDown.Items = {'Salt&pepper', 'Speckle', 'Gaussian'};
+            app.typedebruitDropDown.FontSize = 16;
+            app.typedebruitDropDown.Position = [190 435 112 22];
+            app.typedebruitDropDown.Value = 'Salt&pepper';
+            % Create coefficientdebruitageEditFieldLabel
+            app.coefficientdebruitageEditFieldLabel = uilabel(app.Page6Tab);
+            app.coefficientdebruitageEditFieldLabel.HorizontalAlignment = 'right';
+            app.coefficientdebruitageEditFieldLabel.FontSize = 16;
+            app.coefficientdebruitageEditFieldLabel.FontWeight = 'bold';
+            app.coefficientdebruitageEditFieldLabel.Position = [11.03125 372 176 20];
+            app.coefficientdebruitageEditFieldLabel.Text = 'coefficient de bruitage';
+            % Create coefficientdebruitageEditField
+            app.coefficientdebruitageEditField = uieditfield(app.Page6Tab, 'numeric');
+            app.coefficientdebruitageEditField.Position = [202.03125 373 100 22];
+            % Create typedefiltreDropDownLabel
+            app.typedefiltreDropDownLabel = uilabel(app.Page6Tab);
+            app.typedefiltreDropDownLabel.HorizontalAlignment = 'right';
+            app.typedefiltreDropDownLabel.FontSize = 16;
+            app.typedefiltreDropDownLabel.FontWeight = 'bold';
+            app.typedefiltreDropDownLabel.Position = [81.03125 180 101 20];
+            app.typedefiltreDropDownLabel.Text = 'type de filtre';
+            % Create typedefiltreDropDown
+            app.typedefiltreDropDown = uidropdown(app.Page6Tab);
+            app.typedefiltreDropDown.Items = {'Medium', 'Moyen', 'Laplacien'};
+            app.typedefiltreDropDown.FontSize = 16;
+            app.typedefiltreDropDown.Position = [197.03125 181 100 22];
+            app.typedefiltreDropDown.Value = 'Medium';
+            % Create ajouterBruitButton
+            app.ajouterBruitButton = uibutton(app.Page6Tab, 'push');
+            app.ajouterBruitButton.ButtonPushedFcn = createCallbackFcn(app, @ajouterBruitButtonPushed, true);
+            app.ajouterBruitButton.FontSize = 14;
+            app.ajouterBruitButton.FontWeight = 'bold';
+            app.ajouterBruitButton.FontColor = [1 0 0];
+            app.ajouterBruitButton.Position = [202 318 106 27];
+            app.ajouterBruitButton.Text = ' ajouter Bruit';
+            % Create UIAxes6
+            app.UIAxes6 = uiaxes(app.Page6Tab);
+            title(app.UIAxes6, 'bruit');
+            app.UIAxes6.Position = [411 281 404 242];
+            % Create saisirlatailledufiltreEditFieldLabel
+            app.saisirlatailledufiltreEditFieldLabel = uilabel(app.Page6Tab);
+            app.saisirlatailledufiltreEditFieldLabel.HorizontalAlignment = 'right';
+            app.saisirlatailledufiltreEditFieldLabel.FontSize = 16;
+            app.saisirlatailledufiltreEditFieldLabel.FontWeight = 'bold';
+            app.saisirlatailledufiltreEditFieldLabel.Position = [11.03125 130 169 20];
+            app.saisirlatailledufiltreEditFieldLabel.Text = 'saisir la taille du filtre';
+            % Create saisirlatailledufiltreEditField
+            app.saisirlatailledufiltreEditField = uieditfield(app.Page6Tab, 'numeric');
+            app.saisirlatailledufiltreEditField.Position = [195.03125 131 100 22];
+            % Create ajouterfiltreButton
+            app.ajouterfiltreButton = uibutton(app.Page6Tab, 'push');
+            app.ajouterfiltreButton.ButtonPushedFcn = createCallbackFcn(app, @ajouterfiltreButtonPushed, true);
+            app.ajouterfiltreButton.FontSize = 16;
+            app.ajouterfiltreButton.FontWeight = 'bold';
+            app.ajouterfiltreButton.FontColor = [1 0 0];
+            app.ajouterfiltreButton.Position = [191 86 112 27];
+            app.ajouterfiltreButton.Text = ' ajouter filtre';
+            % Create BruitLabel
+            app.BruitLabel = uilabel(app.Page6Tab);
+            app.BruitLabel.FontSize = 16;
+            app.BruitLabel.FontWeight = 'bold';
+            app.BruitLabel.FontColor = [0.2039 0.2902 0.9333];
+            app.BruitLabel.Position = [17 490 53 20];
+            app.BruitLabel.Text = 'Bruit :';
+            % Create FiltreLabel
+            app.FiltreLabel = uilabel(app.Page6Tab);
+            app.FiltreLabel.FontSize = 16;
+            app.FiltreLabel.FontWeight = 'bold';
+            app.FiltreLabel.FontColor = [0.2392 0.298 0.9529];
+            app.FiltreLabel.Position = [11 223 54 20];
+            app.FiltreLabel.Text = 'Filtre :';
+            % Create UIAxes8
+            app.UIAxes8 = uiaxes(app.Page6Tab);
+            title(app.UIAxes8, 'filtre');
+            app.UIAxes8.Position = [411 7 396 266];
+            % Create calculerPSNRButton
+            app.calculerPSNRButton = uibutton(app.Page6Tab, 'push');
+            app.calculerPSNRButton.ButtonPushedFcn = createCallbackFcn(app, @calculerPSNRButtonPushed, true);
+            app.calculerPSNRButton.Position = [191 11 100 22];
+            app.calculerPSNRButton.Text = 'calculer PSNR';
+            % Create PSNREditFieldLabel
+            app.PSNREditFieldLabel = uilabel(app.Page6Tab);
+            app.PSNREditFieldLabel.HorizontalAlignment = 'right';
+            app.PSNREditFieldLabel.Position = [141.03125 45 39 15];
+            app.PSNREditFieldLabel.Text = 'PSNR';
+            % Create PSNREditField
+            app.PSNREditField = uieditfield(app.Page6Tab, 'numeric');
+            app.PSNREditField.Position = [195.03125 41 100 22];
+        end
+    end
+    methods (Access = public)
+        % Construct app
+        function app = traitement_image()
+            % Create and configure components
+            createComponents(app)
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+            % Execute the startup function
+            runStartupFcn(app, @StartupFcn)
+            if nargout == 0
+                clear app
+            end
+        end
+        % Code that executes before app deletion
+        function delete(app)
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
+
